@@ -1,0 +1,55 @@
+1.
+select *,Rank() over(partition by A.Dept_Id order by A.[St_Age] ) 
+from [dbo].[Student] as A,[dbo].[Department] as B 
+where B.Dept_Id = A.Dept_Id
+go
+
+2.
+select [Name]
+      ,[ProductNumber],
+	  [SizeUnitMeasureCode]
+      ,[WeightUnitMeasureCode]
+      ,[Weight]
+	  ,NTILE(30) over(  order by [Weight])
+from [Production].[Product]
+go
+
+3.
+select * from(
+select * , Row_number() over (partition by dept_id ORDER by s desc) as W
+from
+(
+select A.[Ins_Id],A.[Dept_Id] as dept_id,sum(C.[Crs_Duration]) as s 
+from [dbo].[Instructor] as A, [dbo].[Ins_Course] as B, [dbo].[Course] as C
+where  A.[Ins_Id] = B.[Ins_Id] and C.[Crs_Id] = B.[Crs_Id]
+GROUP BY A.[Ins_Id],A.[Dept_Id]
+) first_
+) second_
+where W<=2
+go
+
+
+4.
+select * from 
+  (select *,ROW_NUMBER() over(order by [Hours]) R
+  from [dbo].[Works_for]) first_
+  where R=3
+  go
+  
+  
+5.
+ create index i4 on  [dbo].[Department]([Manager_hiredate])
+ = 
+ non clustered index was created under module indexes
+ 
+6.
+create clustered index i5 on   [dbo].[Student]([St_Age]) 
+= 
+there is already clustered index under that table
+
+sol >>> create unique nonclustered index i5 on   [dbo].[Student]([St_Age]) 
+
+7. 
+create unique nonclustered index i7 on  [dbo].[Department]([Dept_Manager])
+= 
+error as index is applied to old and new data and there already a Null under the specified column 

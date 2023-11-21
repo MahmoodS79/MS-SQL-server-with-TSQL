@@ -1,0 +1,44 @@
+part2:
+
+6.
+select c.[rowguid],p.FirstName fst,s.rowguid sales_person_that_serves_that_cust into [dbo].[customer_archive]
+from [Sales].[Customer] c,[Person].[Person] p,[Sales].[SalesPerson] s
+where c.CustomerID=p.BusinessEntityID and s.TerritoryID=c.TerritoryID
+
+
+part3:
+
+4.
+select * from [Company].[Employee] e,[Company].[Departments] d,[dbo].[Works_for] wf
+where [ESSn]=[SSN] and [Dnum]=[Dno] and [Dno]=10 and [Hours]>=10
+
+
+
+5.
+select e.Fname from [Company].[Employee] e,[Company].[Employee] m
+where e.Superssn = m.SSN and m.Fname+' '+m.Lname = 'Kamel Mohamed'
+
+6.
+select * from [Company].[Employee] e,[dbo].[Project] p,[dbo].[Works_for] wf
+where e.SSN=wf.ESSn and p.Pnumber=wf.Pno
+order by p.Pname
+
+7.
+
+select p.Pnumber,d.Dname,e.Lname,e.Address,e.Bdate from 
+[Company].[Employee] e,[dbo].[Project] p, [Company].[Departments] d,[dbo].[Works_for] wf,[Company].[Employee] m
+where p.City='Cairo' and wf.ESSn=e.SSN and p.Pnumber=wf.Pno and d.Dnum=e.Dno and d.MGRSSN=m.SSN
+ 
+8.
+select distinct m.Fname,m.Lname from [Company].[Employee] e,[Company].[Employee] m
+where  m.SSN =e.Superssn
+go
+
+select distinct m.Fname,m.Lname from [Company].[Employee] e left outer join [Company].[Employee] m
+on  m.SSN =e.Superssn
+go
+
+9.
+select distinct e.Fname,e.Lname,e.Salary from [Company].[Employee] e left outer join  [dbo].[Dependent] dt
+on  dt.ESSN = e.SSN
+go

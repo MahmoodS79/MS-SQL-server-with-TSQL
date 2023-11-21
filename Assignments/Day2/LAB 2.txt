@@ -1,0 +1,189 @@
+1.
+
+
+
+create schema Company 
+GO
+alter schema Company transfer [dbo].[Departments]
+alter schema Company transfer [dbo].[Project]
+GO
+
+create schema HR 
+GO
+alter schema Company transfer [dbo].[Employee]
+
+
+
+
+2.
+alter VIEW v_man(Ins,t_name)
+with encryption
+as 
+select Ins_Name,t.Top_Name from [dbo].[Topic] t,[dbo].[Instructor] i,[dbo].[Department] d,[dbo].[Ins_Course] ic,[dbo].[Course] c
+where i.Ins_Name=d.Dept_Manager and ic.Ins_Id=i.Ins_Id and t.Top_Id = c.Top_Id
+
+3.
+alter VIEW v_man(Ins,t_name)
+with schemabinding
+as 
+select i.Ins_Name,d.Dept_Name from [dbo].[Instructor] i,[dbo].[Department] d
+where i.Dept_Id=d.Dept_Id  and d.Dept_Name in ('SD','Java')
+go
+
+-----SCHEMABINDING can be used with view to bind base table definition means you can not change structure of base table which 
+	affects view definition. first you need to modify or drop the view structure in case of data binding to remove dependencies. 
+	Here modification of base table means dropping table, adding column or removing column etc.
+	
+4.
+
+create VIEW v1
+as 
+select * from  [dbo].[Student] s
+where s.St_Address in ('Alex','Cairo')
+go
+
+5.
+#Table variables (DECLARE @t TABLE) are visible only to the connection that creates it, and are deleted when the batch or stored procedure ends.
+
+#Local temporary tables (CREATE TABLE #t) are visible only to the connection that creates it, and are deleted when the connection is closed.
+
+#Global temporary tables (CREATE TABLE ##t) are visible to everyone, and are deleted when all connections that have referenced them have closed.
+
+#Tempdb permanent tables (USE tempdb CREATE TABLE t) are visible to everyone, and are deleted when the server is restarted.
+
+select * into #tem_table from [dbo].[Works_for] w,[Company].[Employee] e
+where e.SSN=w.ESSn
+go
+
+select * from #tem_table
+
+
+
+part3:
+
+1.
+create view v_ as
+select p.Pname, count(*) c from [Company].[Employee] e,[dbo].[Works_for] wf,[dbo].[Project] p
+where e.SSN=wf.ESSn and wf.Pno=p.Pnumber
+group by p.Pname
+
+2.
+alter view v_count as
+select p.Pname, sum(wf.Hours) s  from [dbo].[Works_for] wf,[dbo].[Project] p
+where wf.Pno=p.Pnumber
+group by p.Pname
+go
+
+3.
+
+create view v_D30 as
+select e.SSN,p.Pnumber,sum(wf.Hours) c from [Company].[Employee] e,[dbo].[Works_for] wf,,[Company].[Departments] d,[dbo].[Project] p
+where e.SSN=WF.ESSn and e.Dno = d.Dnum and d.Dnum = 30 and wf.Pno = p.Pnumber
+group by e.SSN,p.Pnumber
+go
+
+4.
+
+alter view v_D30 as
+select e.SSN,p.Pnumber,sum(wf.Hours) c from [Company].[Employee] e,[dbo].[Works_for] wf,[Company].[Departments] d,[dbo].[Project] p
+where e.SSN=WF.ESSn and e.Dno = d.Dnum and d.Dnum = 30 and wf.Pno = p.Pnumber and p.Pnumber=500
+group by e.SSN,p.Pnumber
+go
+
+
+
+5.
+drop view dbo.v_D30
+go
+drop view dbo.v_count
+go
+
+6.
+create view v_ as
+select p.Pname, count(*)  c from [Company].[Employee] e,[dbo].[Works_for] wf,[dbo].[Project] p
+where e.SSN=wf.ESSn and wf.Pno=p.Pnumber and p.Pname like '%c%'
+group by p.Pname
+
+
+7.
+
+create view v_2021_CHECK
+as
+select e.SSN from [Company].[Employee] e,[dbo].[Works_for] wf
+where e.SSN = wf.ESSn and wf.[Enter_Date] between '2020-1-1' and '2020-12-30' 
+with check option;
+
+
+8.
+create rule r1 as @sal < 2000
+
+9.
+
+
+
+sp_addtype loc,'nchar(2)'
+
+create rule r1 as @var in ('NY','DS','KW')
+
+create default d1 as 'NY'
+
+sp_bindrule r1,loc
+sp_bindefault d1,loc
+
+
+10.
+
+
+create sequence s1
+start with 1
+increment by 1
+minvalue 1
+maxvalue 1000 
+cycle;
+
+
+create table new_student(
+location_ loc,
+ID int
+)
+go
+
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+go
+
+delete from new_student where ID=2
+go
+
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+go
+
+insert into new_student values('KW',7)
+go
+--no with identity it must b incrmental and unique
+
+update new_student 
+set ID=10
+where ID=7
+--YES i CAN
+go
+
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+go
+--yes i can
+
+--it will start from the last use of the query : NEXT VALUE FOR s1
+
+select NEXT VALUE FOR s1
+insert into new_student(ID) values(NEXT VALUE FOR s1)
+go
+
+--no i can't as it is specific to that column
+
+--Sequence and identity both used to generate auto number but the major 
+--difference is Identity is a table dependant and Sequence is independent from table.
+
+
+

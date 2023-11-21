@@ -1,0 +1,135 @@
+1.
+create function func1(@d date)
+	returns VARCHAR(20)
+		begin
+		return format(@d,'MMMM')
+		end
+
+drop function func1
+select dbo.func1(GETDATE())
+
+
+2.
+multi-statement table valued function
+
+create function func2(@var1 tinyint,@var2 tinyint)
+returns @t table(t tinyint)
+as
+begin
+	declare @t_ tinyint = @var1+1
+	while @t_<>@var2
+		begin
+		insert into @t select @t_
+		set @t_ +=1
+		end
+return	 
+end
+go
+
+select * from dbo.func2(10,40)
+go
+
+
+3.
+inline table valued function
+
+create function func3(@i int)
+returns table 
+as return(
+
+select [Dept_Id],[St_Fname]+' '+[St_Lname] as na from [dbo].[Student] 
+where [St_Id] = @i
+)
+select * from dbo.func3(10)
+go
+
+
+4.
+create function func4(@i int)
+returns varchar(100)
+begin
+declare @var_ as varchar(100)
+if  iti.[dbo].[Student].[St_Id]=@i and iti.[dbo].[Student].[St_Fname] is Null and iti.[dbo].[Student].[St_Lname] is null set @var_='First name & last name are null'
+else if  iti.[dbo].[Student].[St_Id]=@i and iti.[dbo].[Student].[St_Fname] is Null  set @var_='First name & last name are null'
+return @var_
+end
+go
+
+
+5.
+alter function func10(@var1 smallint)
+returns @t table(x varchar(20),y varchar(20),dat varchar(20))
+as 
+begin
+insert into @t select [Dept_Name],[Ins_Name],convert(varchar(20),[Manager_hiredate],@var1) 
+				from [dbo].[Instructor] a,[dbo].[Department] b
+				where  b.[Dept_Id]=a.[Dept_Id]
+
+return
+end
+go
+
+select  * from func10(104)
+go
+
+
+6.
+
+alter function func11(@var1 varchar(12))
+returns @t table(x varchar(50))
+as 
+begin
+if @var1 = 'first_name'
+insert into @t select  isnull(s.St_Fname,0)
+				from [dbo].[Student] s
+else if @var1 = 'last_name'
+insert into @t select  isnull(s.St_Lname,0)
+				from [dbo].[Student] s
+else if @var1 = 'full_name'
+insert into @t select  isnull(s.St_Fname+' '+s.St_Lname,0)
+				from [dbo].[Student] s
+return
+end
+go
+
+select * from func11('last_name')
+
+
+7.
+ 
+alter function func12(@var1 tinyint)
+returns @t table(x tinyint,y varchar(10))
+as 
+begin
+insert into @t
+select [St_Id],substring([St_Fname],1,len([St_Fname])-1) from [dbo].[Student]
+where [St_Id]=@var1 
+return
+end
+go
+
+select * from func12(10)
+
+8.
+alter function func20(@var1 varchar(200), @var2 varchar(10))
+returns table
+as return(
+ execute('select' +@var1+'from' + @var2) 
+)
+go
+
+
+part2:
+
+1.
+
+create function func21(@var1 TINYINT)
+returns table
+as return(
+select *from [dbo].[Project] p ,[dbo].[Employee] e
+where p.[Dnum]= @var1 and e.[Dno]=p.[Dnum]
+)
+go
+
+
+select * from func21(10)
